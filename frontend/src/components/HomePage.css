@@ -1,0 +1,211 @@
+/* Header Styles */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #2ecc71; /* Keeping the original color */
+}
+
+.logo {
+    font-size: 24px;
+    color: white; /* Ensure logo text is white */
+}
+
+.logo a{
+    color: white; /* Ensure category links are white */
+    text-decoration: none;
+}
+
+.nav-menu ul {
+    display: flex;
+    list-style: none;
+}
+
+.nav-menu li {
+    margin: 0 15px;
+}
+
+.nav-menu li a {
+    color: rgb(255, 255, 255); /* White color for navbar buttons */
+    text-decoration: none;
+    background-color: #9A826C; /* Dark brown for buttons */
+    padding: 10px 15px; /* Button padding */
+    border-radius: 5px; /* Rounded corners */
+}
+
+/* Hero Section Styles */
+.hero {
+    background: url('../images/hero-background.png') center/cover no-repeat;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.cta-buttons .btn {
+    padding: 10px 20px;
+    background-color: #27ae60; /* Keeping original color */
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+/* Featured Categories Section */
+.featured-categories {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.categories {
+    display: flex;
+    justify-content: space-around;
+}
+
+.category-card {
+    width: 20%;
+    text-align: center;
+}
+
+.category-card img {
+    width: 100%;
+    height: auto;
+}
+
+.category-card h3 {
+    margin-top: 10px;
+}
+
+/* Footer Styles */
+.footer {
+    background-color: #9A826C; /* Dark brown for footer */
+    color: white;
+    padding: 20px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: space-around;
+}
+
+.footer-links a {
+    color: white; /* Ensuring footer links are white */
+    text-decoration: none; /* No underline on footer links */
+}
+
+.footer-social {
+    text-align: center; 
+    margin-top: 20px;
+}
+
+.footer-social a{
+    color: white; /* Ensure category links are white */
+    text-decoration: none;
+}
+
+/* Theme colors */
+body {
+    background-color: #f5f0e1; /* Light brown */
+    color: #4b5320; /* Olive green */
+}
+
+.header {
+    background-color: #4b5320; /* Olive green for header */
+    color: #f5f0e1; /* Light brown */
+}
+
+.hero {
+    background-color: #f5f0e1; /* Light brown for hero */
+    color: #4b5320; /* Olive green */
+    padding: 20px;
+    text-align: center;
+}
+
+.cta-buttons .btn {
+    background-color: #4b5320; /* Olive green for CTA buttons */
+    color: #f5f0e1; /* Light brown */
+}
+
+.section-divider {
+    border: 1px solid grey; /* Grey line for separation */
+    margin: 20px 0;
+}
+
+.search-bar {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.search-input {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.search-button {
+    padding: 10px 20px;
+    background-color: #4b5320; /* Olive green for search button */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.featured-categories .category-card img {
+    width: 100%;
+    height: auto;
+}
+
+.product-grid {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-start; /* Align products to the left */
+}
+
+.product-card {
+    text-align: left; /* Align text to the left */
+    width: 200px; /* Width of product cards */
+}
+
+.product-card img {
+    width: 100%; /* Adjusted to take full width of the card */
+    height: auto;
+}
+
+.product-card h3,
+.product-card p {
+    color: #4b5320; /* Olive green for product text */
+}
+
+.product-card a {
+    color: white; /* White color for product links */
+    text-decoration: none; /* No underline on links */
+}
+
+.show-more-btn {
+    background-color: #4b5320; /* Olive green for show more button */
+    color: #f5f0e1; /* Light brown text */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    display: block;
+    text-align: center;
+}
+
+/* Category Links Color */
+.categories a {
+    color: #4b5320; /* Ensure category links are white */
+    text-decoration: none; /* No underline on category links */
+}
