@@ -1,0 +1,186 @@
+/* Seller Dashboard Styles */
+.seller-dashboard {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dashboard Header */
+.seller-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+    background-color: #4b5320; /* Olive green */
+    color: #f5f0e1; /* Light brown */
+    padding: 0 15px;
+    z-index: 10; /* Ensure header is above other elements */
+}
+
+/* Logo */
+.seller-logo {
+    font-size: 30px; /* Logo height */
+}
+
+/* Navbar Styles */
+.seller-navbar ul {
+    list-style: none; /* No bullets */
+    padding: 0; /* No padding */
+    display: flex; /* Horizontal layout */
+}
+
+.seller-navbar li {
+    margin: 0 15px; /* Space between items */
+}
+
+.seller-nav-link {
+    color: #f5f0e1; /* Light brown for nav links */
+    text-decoration: none; /* No underline */
+    padding: 10px 15px; /* Button-like padding */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.seller-nav-link:hover {
+    background-color: #9A826C; /* Dark brown on hover */
+}
+
+/* Hero Section */
+.seller-hero-section {
+    background-image: url('../images/heroimage1.png'); /* Background image */
+    background-size: cover; /* Cover image */
+    background-position: center; /* Center the image */
+    height: 300px; /* Fixed height for hero section */
+    border-radius: 0 0 50% 50%; /* Curved bottom */
+    display: flex; /* Flexbox for centering */
+    align-items: flex-end; /* Align content to bottom */
+    justify-content: center; /* Center the content */
+    position: relative; /* Relative positioning for the content */
+    margin-top: 20px; /* Space below header */
+}
+
+/* Hero Content */
+.seller-hero-content {
+    color: #9A826C; /* White text */
+    font-size: 36px; /* Large font size */
+    position: absolute; /* Absolute positioning for overlap */
+    bottom: 20px; /* Position from the bottom */
+}
+
+/* Main Dashboard Area */
+.seller-main-dashboard {
+    margin-top: 20px; /* Space for the header */
+    padding: 20px; /* Padding for main dashboard */
+    background-color: #f5f0e1; /* Light brown */
+}
+
+/* Overview Container */
+.seller-overview-container {
+    display: flex; /* Flexbox for two-column layout */
+    justify-content: space-between; /* Space between columns */
+    margin-bottom: 20px; /* Space below overview */
+}
+
+/* Left Column */
+.seller-left-column {
+    flex: 70%; /* Take 70% width */
+}
+
+/* Quick Stats */
+.seller-quick-stats {
+    display: grid; /* Grid for quick stats */
+    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    gap: 20px; /* Gap between cards */
+    margin-bottom: 20px; /* Space below quick stats */
+}
+
+/* Cards */
+.seller-card {
+    background-color: white; /* White background for cards */
+    border: 2px solid #4b5320; /* Olive green border */
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center; /* Centered text */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+}
+
+.seller-card h3 {
+    color: #9A826C; /* Dark brown for card titles */
+}
+
+.seller-card p {
+    font-size: 36px; /* Large numbers for metrics */
+    color: #4b5320; /* Olive green */
+}
+
+/* Low Inventory Alerts */
+.seller-low-inventory-alerts {
+    margin-top: 20px; /* Space above low inventory alerts */
+}
+
+/* Right Column */
+.seller-right-column {
+    flex: 30%; /* Take 30% width */
+    padding-left: 20px; /* Space between columns */
+}
+
+/* Eco Impact Statistics */
+.seller-eco-impact {
+    margin-top: 20px; /* Space above eco impact section */
+}
+
+/* Section Styles */
+.seller-product-management,
+.seller-inventory-management {
+    margin-top: 20px; /* Space above sections */
+    padding: 15px; /* Padding for sections */
+    background-color: #9A826C; /* Dark brown background */
+    color: white; /* White text */
+}
+
+.seller-product-management h2,
+.seller-inventory-management h2 {
+    font-size: 24px; /* Font size for section titles */
+}
+
+/* Button Styles */
+.seller-dashboard-btn {
+    background-color: #4b5320; /* Olive green */
+    color: #f5f0e1; /* Light brown */
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px; /* Space between buttons */
+}
+
+.seller-dashboard-btn:hover {
+    background-color: #9A826C; /* Dark brown on hover */
+}
+
+/* Footer Styles */
+.seller-footer {
+    background-color: #9A826C; /* Dark brown for footer */
+    color: white; /* White text */
+    padding: 15px; /* Padding for footer */
+    text-align: center; /* Centered text */
+}
+
+.seller-footer a {
+    color: white; /* White text for footer links */
+    text-decoration: none; /* No underline */
+    margin: 0 10px; /* Space between links */
+}
+
+.seller-footer a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .seller-main-dashboard {
+        margin-left: 0; /* Remove margin for mobile */
+    }
+
+    .seller-overview-container {
+        flex-direction: column; /* Stack columns on mobile */
+    }
+}

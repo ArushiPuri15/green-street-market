@@ -1,10 +1,10 @@
-// Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('customer'); // Default role is customer
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ const Login = ({ onLogin }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password, role }), // Send role along with username and password
             });
 
             if (!response.ok) {
@@ -28,8 +28,14 @@ const Login = ({ onLogin }) => {
 
             const data = await response.json();
             localStorage.setItem('token', data.access_token); // Store the token
-            onLogin(); // Call the onLogin function to update authentication state
-            navigate('/profile'); // Redirect to the profile page
+            onLogin(role); // Pass the role to the onLogin function
+
+            // Redirect based on role
+            if (role === 'seller') {
+                navigate('/dashboard'); // Redirect to seller dashboard
+            } else {
+                navigate('/profile'); // Redirect to customer profile
+            }
         } catch (error) {
             setError(error.message); // Set the error message to display
         }
@@ -58,6 +64,13 @@ const Login = ({ onLogin }) => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                </div>
+                <div>
+                    <label htmlFor="role">Login as:</label>
+                    <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
+                        <option value="customer">Customer</option>
+                        <option value="seller">Seller</option>
+                    </select>
                 </div>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 <button type="submit">Login</button>

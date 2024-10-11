@@ -1,14 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './HomePage.css'; // Custom CSS for HomePage
-import fashion from '../images/fashion.jpg';
-import homeLiving from '../images/home-living.jpg';
-import zeroWaste from '../images/zero-waste.jpg';
-import product1 from '../images/product1.jpg';
-import product2 from '../images/product2.jpg';
-import food from '../images/food.jpg';
 
 function HomePage() {
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/products'); 
+                const data = await response.json();
+                console.log('Fetched products:', data);
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                } else {
+                    setProducts([]); // Fallback if not an array
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                setProducts([]); // Set to empty on error
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
     return (
         <div className="home-page">
             {/* Header/NavBar */}
@@ -51,70 +67,24 @@ function HomePage() {
 
             <hr className="section-divider" />
 
-            {/* Featured Categories Section */}
-            <section className="featured-categories">
-                <h2>Shop By Category</h2>
-                <div className="categories">
-                    <div className="category-card">
-                        <Link to="/categories/home-living">
-                            <img src={homeLiving} alt="Home & Living" />
-                            <h3>Eco-Friendly Home & Living</h3>
-                        </Link>
-                    </div>
-                    <div className="category-card">
-                        <Link to="/categories/fashion">
-                            <img src={fashion} alt="Fashion" />
-                            <h3>Sustainable Fashion</h3>
-                        </Link>
-                    </div>
-                    <div className="category-card">
-                        <Link to="/categories/zero-waste">
-                            <img src={zeroWaste} alt="Zero Waste" />
-                            <h3>Zero-Waste Products</h3>
-                        </Link>
-                    </div>
-                    <div className="category-card">
-                        <Link to="/categories/food">
-                            <img src={food} alt="Food" />
-                            <h3>Organic & Sustainable Food</h3>
-                        </Link>
-                    </div>
-                </div>
-                <button className="show-more-btn">Show More Categories</button>
-            </section>
-
-            <hr className="section-divider" />
-
-            {/* Eco Score Section */}
-            <section className="eco-score">
-                <h2>What’s Your Eco Score?</h2>
-                <p>Check your eco score and make environmentally responsible purchases.</p>
-                <Link to="/eco-score" className="btn">Check Your Eco Score</Link>
-            </section>
-
-            <hr className="section-divider" />
-
             {/* Featured Products Section */}
             <section className="featured-products">
                 <h2>Popular Sustainable Products</h2>
                 <div className="product-grid">
-                    {/* Example product cards */}
-                    <div className="product-card">
-                        <Link to="/products/1">
-                            <img src={product1} alt="Organic Cotton Shirt" className="product-img" />
-                            <h3>Organic Cotton Shirt</h3>
-                        </Link>
-                        <p>$25.99</p>
-                        <p>Eco Score: 85</p>
-                    </div>
-                    <div className="product-card">
-                        <Link to="/products/2">
-                            <img src={product2} alt="Solar-Powered Charger" className="product-img" />
-                            <h3>Solar-Powered Charger</h3>
-                        </Link>
-                        <p>$45.99</p>
-                        <p>Eco Score: 90</p>
-                    </div>
+                    {Array.isArray(products) && products.length > 0 ? (
+                        products.map((product) => (
+                            <div className="product-card" key={product.id}>
+                                <Link to={`/products/${product.id}`}>
+                                    <img src={product.image || 'default-image-url.jpg'} alt={product.name} className="product-img" />
+                                    <h3>{product.name}</h3>
+                                </Link>
+                                <p>${product.price}</p>
+                                <p>Eco Score: {product.eco_score || 'N/A'}</p>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No products available.</p>
+                    )}
                 </div>
                 <Link to="/products" className="btn">Shop All Products</Link>
             </section>

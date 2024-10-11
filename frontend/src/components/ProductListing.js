@@ -1,22 +1,28 @@
+// ProductListing.js
 import React from 'react';
 
-function ProductListing({ products, addToCart }) {
+const ProductListing = ({ products }) => {
+    // Ensure products is always an array
+    const productList = Array.isArray(products) ? products : [];
+
     return (
         <div>
             <h2>Product Listing</h2>
-            <ul>
-                {products.map((product, index) => (
-                    <li key={index}>
-                        <h3>{product.name}</h3>
-                        <p>{product.description}</p>
-                        <p>Price: ${product.price}</p>
-                        <p>Eco Score: {product.ecoScore}</p>
-                        <button onClick={() => addToCart(product)}>Add to Cart</button>
-                    </li>
-                ))}
-            </ul>
+            {productList.length > 0 ? (
+                <ul>
+                    {productList.map(product => (
+                        <li key={product.id}>
+                            <h3>{product.name}</h3>
+                            <p>Price: ${product.price}</p>
+                            <p>Eco Score: {product.eco_score || 'N/A'}</p>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p>No products available.</p>
+            )}
         </div>
     );
-}
+};
 
 export default ProductListing;

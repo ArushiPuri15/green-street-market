@@ -25,6 +25,18 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username}>'
 
+# Define Product model
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(300), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    eco_score = db.Column(db.Integer, nullable=True)  # Eco score can be added later
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Relate to user
+
+    def __repr__(self):
+        return f'<Product {self.name}>'
+
 # Define the EnvironmentalAction model
 class EnvironmentalAction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -64,10 +76,61 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if user and bcrypt.check_password_hash(user.password, password):
-        access_token = create_access_token(identity={'username': user.username})
+        access_token = create_access_token(identity={'username': user.username, 'id': user.id})
         return jsonify(access_token=access_token), 200
     else:
         return jsonify({"message": "Invalid credentials!"}), 401
+
+@app.route('/api/products', methods=['POST'])
+@jwt_required()
+def add_product():
+    current_user = get_jwt_identity()
+    data = request.json
+    new_product = Product(
+        name=data['name'],
+        description=data['description'],
+        price=data['price'],
+        eco_score=data.get('eco_score', None),  # Optional eco score
+        user_id=current_user['id']  # Store the user ID with the product
+    )
+    db.session.add(new_product)
+    db.session.commit()
+    return jsonify({"message": "Product added successfully!"}), 201
+
+@app.route('/api/products', methods=['GET'])
+@jwt_required()
+def get_products():
+    current_user = get_jwt_identity()
+    products = Product.query.filter_by(user_id=current_user['id']).all()
+    return jsonify([{'id': p.id, 'name': p.name, 'description': p.description, 'price': p.price, 'eco_score': p.eco_score} for p in products]), 200
+
+@app.route('/api/products/<int:product_id>', methods=['PUT'])
+@jwt_required()
+def update_product(product_id):
+    current_user = get_jwt_identity()
+    data = request.json
+    product = Product.query.filter_by(id=product_id, user_id=current_user['id']).first()
+    
+    if product:
+        product.name = data['name']
+        product.description = data['description']
+        product.price = data['price']
+        product.eco_score = data.get('eco_score', product.eco_score)  # Only update if provided
+        db.session.commit()
+        return jsonify({"message": "Product updated successfully!"}), 200
+    return jsonify({"message": "Product not found!"}), 404
+
+@app.route('/api/products/<int:product_id>', methods=['DELETE'])
+@jwt_required()
+def delete_product(product_id):
+    current_user = get_jwt_identity()
+    product = Product.query.filter_by(id=product_id, user_id=current_user['id']).first()
+    
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({"message": "Product deleted successfully!"}), 200
+    return jsonify({"message": "Product not found!"}), 404
 
 @app.route('/api/products')
 def products():

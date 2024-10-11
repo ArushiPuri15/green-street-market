@@ -1,0 +1,52 @@
+.login-container {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f0e1; /* Light brown */
+    border: 1px solid #9A826C; /* Dark brown border */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #4b5320; /* Olive green */
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #9A826C; /* Dark brown */
+}
+
+input[type="text"], input[type="password"], select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4b5320; /* Olive green */
+    color: #f5f0e1; /* Light brown */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #9A826C; /* Dark brown */
+}
+
+.password-recovery {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.password-recovery a {
+    color: #4b5320; /* Olive green */
+    text-decoration: none;
+}

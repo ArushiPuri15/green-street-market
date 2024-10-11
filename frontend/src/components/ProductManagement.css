@@ -1,0 +1,94 @@
+/* ProductManagement.css */
+.product-management {
+    padding: 20px;
+    background-color: #f5f0e1; /* Light brown background */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+}
+
+/* Form Styles */
+.product-management form {
+    display: flex;
+    flex-direction: column; /* Vertical layout */
+    margin-bottom: 20px; /* Space below form */
+}
+
+.product-management input[type="text"],
+.product-management input[type="number"],
+.product-management textarea {
+    padding: 10px;
+    margin: 5px 0; /* Space above and below fields */
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+}
+
+.product-management button {
+    background-color: #4b5320; /* Olive green */
+    color: #f5f0e1; /* Light brown */
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth transition */
+    margin-top: 10px; /* Space above button */
+}
+
+.product-management button:hover {
+    background-color: #9A826C; /* Dark brown on hover */
+}
+
+/* Table Styles */
+.product-management table {
+    width: 100%; /* Full width */
+    border-collapse: collapse; /* Merge borders */
+    margin-top: 20px; /* Space above table */
+}
+
+.product-management th,
+.product-management td {
+    padding: 12px; /* Space inside cells */
+    text-align: left; /* Left align text */
+    border-bottom: 1px solid #ccc; /* Grey border below rows */
+}
+
+.product-management th {
+    background-color: #4b5320; /* Olive green */
+    color: #f5f0e1; /* Light brown */
+    font-weight: bold; /* Bold text for headers */
+}
+
+.product-management tr:hover {
+    background-color: #f0f0f0; /* Light grey on row hover */
+}
+
+/* Action Buttons in Table */
+.product-management button {
+    background-color: #9A826C; /* Dark brown for action buttons */
+    color: white; /* White text */
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 5px; /* Space between buttons */
+}
+
+.product-management button:hover {
+    background-color: #4b5320; /* Olive green on hover */
+}
+
+/* Error Message Styles */
+.product-management p {
+    color: red; /* Red for error messages */
+    font-weight: bold; /* Bold text for emphasis */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .product-management form {
+        flex-direction: column; /* Stack inputs vertically on mobile */
+    }
+
+    .product-management button {
+        width: 100%; /* Full width for buttons on mobile */
+    }
+}
