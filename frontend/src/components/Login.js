@@ -18,7 +18,7 @@ const Login = ({ onLogin }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password, role }), // Send role along with username and password
+                body: JSON.stringify({ username, password }), // Send only username and password
             });
 
             if (!response.ok) {
@@ -31,10 +31,12 @@ const Login = ({ onLogin }) => {
             onLogin(role); // Pass the role to the onLogin function
 
             // Redirect based on role
-            if (role === 'seller') {
+            if (role === 'admin') {
+                navigate('/admin/dashboard'); // Redirect to admin dashboard
+            } else if (role === 'seller') {
                 navigate('/dashboard'); // Redirect to seller dashboard
             } else {
-                navigate('/profile'); // Redirect to customer profile
+                navigate('/'); // Redirect to customer home page
             }
         } catch (error) {
             setError(error.message); // Set the error message to display
@@ -70,6 +72,7 @@ const Login = ({ onLogin }) => {
                     <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
                         <option value="customer">Customer</option>
                         <option value="seller">Seller</option>
+                        <option value="admin">Admin</option>
                     </select>
                 </div>
                 {error && <p style={{ color: 'red' }}>{error}</p>}

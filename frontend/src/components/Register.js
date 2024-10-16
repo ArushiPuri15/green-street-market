@@ -1,10 +1,10 @@
-// Register.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Register = ({ onRegister }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('customer'); // Default role is customer
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ const Register = ({ onRegister }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ username, password, role }), // Send role along with username and password
             });
 
             if (!response.ok) {
@@ -58,6 +58,14 @@ const Register = ({ onRegister }) => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                </div>
+                <div>
+                    <label htmlFor="role">Role</label>
+                    <select id="role" value={role} onChange={(e) => setRole(e.target.value)} required>
+                        <option value="customer">Customer</option>
+                        <option value="seller">Seller</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 <button type="submit">Register</button>

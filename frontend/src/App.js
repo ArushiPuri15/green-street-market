@@ -8,6 +8,10 @@ import CheckoutPage from './components/CheckoutPage';
 import Login from './components/Login';
 import Register from './components/Register';
 import NavBar from './components/NavBar';
+import AdminDashboard from './components/admin/AdminDashboard';
+import RecycleApprovals from './components/admin/RecycleApprovals'; // Update the path as necessary
+import RecycleProgram from './components//RecycleProgram'; 
+import EcoPoints from './components/EcoPoints';
 
 // New components for Seller Dashboard
 import SellerDashboard from './components/SellerDashboard';
@@ -83,7 +87,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
-
   return (
     <Router>
         <NavBar onLogout={handleLogout} /> {/* Pass logout function to NavBar */}
@@ -95,7 +98,8 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage cartItems={cartItems} />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/register" element={<Register onRegister={handleRegister} />} />
-            
+            <Route path="/recycle-program" element={<RecycleProgram />} />
+            <Route path="/eco-points" element={<EcoPoints/>}/>
             {/* Conditional Seller Dashboard Routes */}
             {isAuthenticated && role === 'seller' && (
               <>
@@ -115,9 +119,18 @@ function App() {
                 <Route path="/checkout" element={<CheckoutPage cartItems={cartItems} />} />
               </>
             )}
+
+            {/* Conditional Admin Dashboard Routes */}
+            {isAuthenticated && role === 'admin' && (
+              <>
+                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/recycle-approvals" element={<RecycleApprovals />} /> {/* For approving/rejecting recycle items */}
+                {/* Add more admin-specific routes if needed */}
+              </>
+            )}
         </Routes>
     </Router>
-  );
+);
 }
 
 export default App;

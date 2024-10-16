@@ -3,49 +3,36 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from datetime import datetime, timedelta
 import os
-import google.generativeai as genai
+import string
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Configure SQLite database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///environmental_program.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'  # Change this to a random secret key
-db = SQLAlchemy(app)  # Initialize SQLAlchemy
-bcrypt = Bcrypt(app)  # Initialize Bcrypt for password hashing
-jwt = JWTManager(app)  # Initialize JWT Manager
-
-# Set up the Gemini API
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")  # Get the Gemini API key from environment variables
-genai.configure(api_key=GEMINI_API_KEY)
-
-# Create the model
-generation_config = {
-    "temperature": 1,
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
-}
-
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    generation_config=generation_config,
-)
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 
 # Define User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
+    role = db.Column(db.String(50), default='customer')  # Default role is 'customer'
+    eco_points = db.Column(db.Integer, default=0)  # Add eco_points field with default value 0
 
     def __repr__(self):
         return f'<User {self.username}>'
+
 
 # Define Product model
 class Product(db.Model):
@@ -54,14 +41,41 @@ class Product(db.Model):
     description = db.Column(db.String(300), nullable=False)
     price = db.Column(db.Float, nullable=False)
     eco_score = db.Column(db.Integer, nullable=True)  # Eco score can be added later
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Relate to user
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return f'<Product {self.name}>'
 
-# Create the database tables
+# Define RecycleItem model
+class RecycleItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.String(150), nullable=False)
+    material = db.Column(db.String(150), nullable=False)
+    condition = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(300), nullable=True)
+    status = db.Column(db.String(50), default="Pending")
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date_submitted = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+# Define Voucher model
+class Voucher(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(100), unique=True, nullable=False)
+    discount_value = db.Column(db.Float, nullable=False)  # Discount percentage
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    valid_until = db.Column(db.DateTime, nullable=False)
+    is_redeemed = db.Column(db.Boolean, default=False)
+
+
+# Define Admin model
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+
+# Create tables if not already created
 with app.app_context():
-    db.create_all()  # Create database tables if they don't exist
+    db.create_all()
 
 @app.route('/')
 def home():
@@ -72,15 +86,16 @@ def home():
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
+    role = request.json.get('role', 'customer')  # Default to customer if not provided
 
     if User.query.filter_by(username=username).first():
         return jsonify({"message": "User already exists!"}), 400
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    new_user = User(username=username, password=hashed_password)
+    new_user = User(username=username, password=hashed_password, role=role)  # Include role in user creation
     db.session.add(new_user)
     db.session.commit()
-    
+
     return jsonify({"message": "User registered successfully!"}), 201
 
 @app.route('/api/login', methods=['POST'])
@@ -90,118 +105,155 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     if user and bcrypt.check_password_hash(user.password, password):
-        access_token = create_access_token(identity={'username': user.username, 'id': user.id})
+        access_token = create_access_token(identity={'username': user.username, 'id': user.id, 'role': user.role})
         return jsonify(access_token=access_token), 200
     else:
         return jsonify({"message": "Invalid credentials!"}), 401
 
-# ---------------- Product Routes ----------------
-@app.route('/api/products', methods=['POST'])
-@jwt_required()
-def add_product():
-    current_user = get_jwt_identity()
-    data = request.json
+# Admin Registration Route
+@app.route('/api/admin/register', methods=['POST'])
+def register_admin():
+    username = request.json.get('username')
+    password = request.json.get('password')
 
-    new_product = Product(
-        name=data['name'],
-        description=data['description'],
-        price=data['price'],
-        eco_score=data.get('eco_score', None),  # Optional eco score
-        user_id=current_user['id']  # Store the user ID with the product
-    )
-    db.session.add(new_product)
+    if Admin.query.filter_by(username=username).first():
+        return jsonify({"message": "Admin already exists!"}), 400
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_admin = Admin(username=username, password=hashed_password)
+    db.session.add(new_admin)
     db.session.commit()
-    return jsonify({"message": "Product added successfully!"}), 201
 
-@app.route('/api/products', methods=['GET'])
-@jwt_required()
-def get_products():
-    current_user = get_jwt_identity()
-    products = Product.query.filter_by(user_id=current_user['id']).all()
-    return jsonify([{'id': p.id, 'name': p.name, 'description': p.description, 'price': p.price, 'eco_score': p.eco_score} for p in products]), 200
+    return jsonify({"message": "Admin registered successfully!"}), 201
 
-@app.route('/api/products/<int:product_id>', methods=['PUT'])
+# ---------------- Recycle Program Routes ----------------
+@app.route('/api/recycle', methods=['POST'])
 @jwt_required()
-def update_product(product_id):
+def submit_recycle_item():
     current_user = get_jwt_identity()
     data = request.json
-    product = Product.query.filter_by(id=product_id, user_id=current_user['id']).first()
-    
-    if product:
-        product.name = data['name']
-        product.description = data['description']
-        product.price = data['price']
-        product.eco_score = data.get('eco_score', product.eco_score)  # Only update if provided
-        db.session.commit()
-        return jsonify({"message": "Product updated successfully!"}), 200
-    return jsonify({"message": "Product not found!"}), 404
 
-@app.route('/api/products/<int:product_id>', methods=['DELETE'])
+    recycle_item = RecycleItem(
+        product_name=data['product_name'],
+        material=data['material'],
+        condition=data['condition'],
+        description=data.get('description', ''),
+        user_id=current_user['id']
+    )
+    db.session.add(recycle_item)
+    db.session.commit()
+
+    return jsonify({"message": "Recycle item submitted successfully!"}), 201
+
+@app.route('/api/recycle_items', methods=['GET'])
 @jwt_required()
-def delete_product(product_id):
+def get_recycle_items():
     current_user = get_jwt_identity()
-    product = Product.query.filter_by(id=product_id, user_id=current_user['id']).first()
-    
-    if product:
-        db.session.delete(product)
-        db.session.commit()
-        return jsonify({"message": "Product deleted successfully!"}), 200
-    return jsonify({"message": "Product not found!"}), 404
+    items = RecycleItem.query.filter_by(user_id=current_user['id']).all()
+    return jsonify([{
+        'id': item.id,
+        'product_name': item.product_name,
+        'material': item.material,
+        'condition': item.condition,
+        'description': item.description,
+        'status': item.status,
+        'date_submitted': item.date_submitted
+    } for item in items]), 200
 
-def analyze_with_gemini(product_data):
-    """Analyze product sustainability using Gemini."""
-    
-    # Extract product data from the request
-    product_description = product_data.get('description', '')
-    material = product_data.get('material', '')
-    certifications = product_data.get('certifications', [])
-    manufacturing_location = product_data.get('manufacturingLocation', '')
-    durability = product_data.get('durability', '')
-    end_of_life = product_data.get('endOfLife', '')
+# ---------------- Admin Routes ----------------
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    username = request.json.get('username')
+    password = request.json.get('password')
 
-    # Create a prompt using the provided product data
-    prompt = f"""
-    Analyze the sustainability of the following product:
-    Product Description: {product_description}
-    Material: {material}
-    Certifications: {', '.join(certifications)}
-    Manufacturing Location: {manufacturing_location}
-    Durability: {durability}
-    End-of-Life Disposal: {end_of_life}
+    admin = Admin.query.filter_by(username=username).first()
+    if admin and bcrypt.check_password_hash(admin.password, password):
+        access_token = create_access_token(identity={'username': admin.username, 'role': 'admin'})
+        return jsonify(access_token=access_token), 200
+    else:
+        return jsonify({"message": "Invalid admin credentials!"}), 401
 
-    Please provide an eco score out of 100 based on the sustainability of the material, certifications, manufacturing impact, durability, and end-of-life disposal. The response should have the first line as eco score:
-    """
+# Admin Dashboard API for approving or rejecting recyclable items
+@app.route('/api/admin/recycle_items', methods=['GET'])
+@jwt_required()
+def get_admin_recycle_items():
+    current_user = get_jwt_identity()
+    if current_user.get('role') != 'admin':
+        return jsonify({"message": "Unauthorized"}), 403  # Check if user is an admin
 
-    # Start the chat session and send the message
-    chat_session = model.start_chat(history=[])
-    response = chat_session.send_message(prompt)
+    # Get all pending recyclable items
+    items = RecycleItem.query.filter_by(status="Pending").all()
+    return jsonify([{
+        'id': item.id,
+        'product_name': item.product_name,
+        'material': item.material,
+        'condition': item.condition,
+        'description': item.description,
+        'status': item.status,
+        'date_submitted': item.date_submitted
+    } for item in items]), 200
 
-    # Log the response for debugging
-    print(f"Gemini Response: {response.text}")
+# Approve or reject recycle item
+@app.route('/api/admin/recycle_item/<int:item_id>', methods=['PUT'])
+@jwt_required()
+def approve_recycle_item(item_id):
+    current_user = get_jwt_identity()
+    if current_user.get('role') != 'admin':
+        return jsonify({"message": "Unauthorized"}), 403
 
-    return response.text if isinstance(response.text, str) else "Error in Gemini response"
+    item = RecycleItem.query.get(item_id)
+    if not item:
+        return jsonify({"message": "Item not found!"}), 404
 
-@app.route('/api/calculate-eco-score', methods=['POST'])
-def calculate_eco_score():
-    """Calculate the eco score using Gemini."""
-    product_data = request.json  # Get the JSON data from the request
+    status = request.json.get('status')
+    if status not in ['Approved', 'Rejected']:
+        return jsonify({"message": "Invalid status!"}), 400
 
-    # Ensure product_data is a dictionary
-    if not isinstance(product_data, dict):
-        return jsonify({"error": "Invalid input format. Expecting JSON."}), 400
+    item.status = status
+    db.session.commit()
 
-    # Analyze product sustainability using Gemini
-    gemini_response = analyze_with_gemini(product_data)
+    # Generate voucher if approved
+    if status == 'Approved':
+        generate_voucher(item.user_id, discount_value=15)  # Generate a 15% voucher
 
-    # Extract the eco score from the response
-    try:
-        # Assuming gemini_response is a formatted string that includes the eco score
-        score_line = next(line for line in gemini_response.split('\n') if "Eco Score:" in line)
-        eco_score = int(score_line.split(":")[1].strip().split('/')[0])  # Extracting the score correctly
-    except (ValueError, StopIteration):
-        return jsonify({"eco_score": 50, "message": "Default score returned. Check prompt or API response."}), 500
+    return jsonify({"message": f"Item {status} successfully!"}), 200
 
-    return jsonify({'eco_score': eco_score, 'gemini_analysis': gemini_response})
+# Function to generate a voucher with a specific discount
+def generate_voucher(user_id, discount_value=15):
+    voucher_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    voucher = Voucher(
+        code=voucher_code,
+        discount_value=discount_value,
+        user_id=user_id,
+        valid_until=datetime.utcnow() + timedelta(days=30)
+    )
+    db.session.add(voucher)
+    db.session.commit()
+
+@app.route('/api/vouchers', methods=['GET'])
+@jwt_required()
+def get_vouchers():
+    current_user = get_jwt_identity()
+    vouchers = Voucher.query.filter_by(user_id=current_user['id'], is_redeemed=False).all()
+    return jsonify([{
+        'code': voucher.code,
+        'discount_value': voucher.discount_value,
+        'valid_until': voucher.valid_until,
+        'is_redeemed': voucher.is_redeemed
+    } for voucher in vouchers]), 200
+
+@app.route('/api/eco_points', methods=['GET'])
+@jwt_required()
+def get_eco_points():
+    current_user = get_jwt_identity()
+    # Fetch eco points logic here
+    # Assuming you store eco points in your user model
+    user = User.query.get(current_user['id'])
+    return jsonify({"points": user.eco_points})
 
 if __name__ == '__main__':
+    # Create the necessary tables if they don't exist
+    with app.app_context():
+        db.create_all()  # This will create the necessary tables
+    
     app.run(debug=True)
